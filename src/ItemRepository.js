@@ -14,6 +14,7 @@ class ItemRepository {
 
   static load() {
     let data = fs.readFileSync(dataFilePath);
+    // TODO:以下の分岐に入ることはあるのか？
     if (data == '') {
       return [];
     }
