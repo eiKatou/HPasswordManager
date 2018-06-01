@@ -70,7 +70,7 @@ for(;;) {
     ItemRepository.write(items);
     console.log();
   } else if (command == 's' || command == 'search') {
-    let searchWord = readlineSync.question('search: ');
+    let searchWord = readlineSync.question(' search: ');
     let item = searchItem(items, searchWord);
     if (item == undefined) {
       break;
