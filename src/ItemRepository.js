@@ -23,7 +23,7 @@ class ItemRepository {
   }
 
   static write(items) {
-    fs.writeFileSync(dataFilePath, JSON.stringify(items));
+    fs.writeFileSync(dataFilePath, JSON.stringify(items, null, 2));
   }
 }
 
