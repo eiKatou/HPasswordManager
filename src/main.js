@@ -42,13 +42,6 @@ function itemCommand(item) {
   }
 }
 
-function validateMasterPassword(config, masterPassword) {
-  if (config.masterPasswordHash == masterPassword.getHash()) {
-    return true;
-  }
-  return false;
-}
-
 // ------------
 //   main
 // ------------
@@ -70,7 +63,7 @@ if (config == null) {
 // マスターパスワードの入力と生成
 let inputMasterPassword = readlineSync.question(' master password: ');
 let masterPassword = new MasterPassword(inputMasterPassword);
-if (!validateMasterPassword(config, masterPassword)) {
+if (!masterPassword.validate(config.masterPasswordHash)) {
   console.log('Invalid password.');
   return;
 }

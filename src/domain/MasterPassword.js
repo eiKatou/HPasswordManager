@@ -11,7 +11,7 @@ class MasterPassword {
     return sha512.digest('base64');
   }
 
-  isEqualToHash(expectedHash) {
+  validate(expectedHash) {
     return this.getHash() == expectedHash;
   }
 
