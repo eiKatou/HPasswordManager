@@ -69,7 +69,7 @@ if (!masterPassword.validate(config.masterPasswordHash)) {
 }
 console.log();
 
-let items = ItemRepository.load();
+let items = ItemRepository.load(masterPassword.password);
 for(;;) {
   let command = readlineSync.question('command: ');
   if (command == 'q' || command == 'quit') {
@@ -77,7 +77,7 @@ for(;;) {
   } else if (command == 'a' || command == 'add') {
     let item = addItem(items);
     items.push(item);
-    ItemRepository.write(items);
+    ItemRepository.write(items, masterPassword.password);
     console.log();
   } else if (command == 's' || command == 'search') {
     let searchWord = readlineSync.question(' search: ');

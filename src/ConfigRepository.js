@@ -7,6 +7,12 @@ class ConfigRepository {
   static init() {
     try {
       fs.accessSync(dataFilePath, fs.constants.R_OK | fs.constants.W_OK);
+
+      // 手動で空ファイルにされる場合を考慮
+      let data = fs.readFileSync(dataFilePath);
+      if (data == '') {
+        fs.writeFileSync(dataFilePath, JSON.stringify([]));
+      }
     } catch (err) {
       fs.writeFileSync(dataFilePath, JSON.stringify({}));
     }

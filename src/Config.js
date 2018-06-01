@@ -1,10 +1,6 @@
 class Config {
   constructor(masterPasswordHash) {
-    this._masterPasswordHash = masterPasswordHash;
-  }
-
-  get masterPasswordHash() {
-    return this._masterPasswordHash;
+    this.masterPasswordHash = masterPasswordHash;
   }
 
   print() {
