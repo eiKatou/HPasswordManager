@@ -1,5 +1,5 @@
 const fs = require('fs');
-const Item = require('./Item');
+const Item = require('./domain/Item');
 const homeDir = process.env[process.platform == "win32" ? "USERPROFILE" : "HOME"];
 const dataFilePath = homeDir + '/.hpassword_data';
 

@@ -6,6 +6,11 @@ class Item {
     this.password = password;
   }
   
+  isSubjectToSearch(searchWord) {
+    return this.name.toLowerCase().includes(searchWord.toLowerCase())
+       || this.site.toLowerCase().includes(searchWord.toLowerCase());
+  }
+
   print() {
     console.log('name:' + this.name + ', site:' + this.site);
   }

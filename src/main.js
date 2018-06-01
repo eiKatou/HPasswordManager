@@ -1,19 +1,23 @@
 const readlineSync = require('readline-sync');
 const fs = require('fs');
-const Item = require('./Item');
+const Item = require('./domain/Item');
 const ItemRepository = require('./ItemRepository');
 
-function addItem(items) {
+// ------------
+//   function
+// ------------
+function addItem() {
   let name = readlineSync.question(' Item name:');
   let siteAddress = readlineSync.question(' Site address:');
   let id = readlineSync.question(' Id:');
   let password = readlineSync.question(' Password:');
-  let item = new Item(name, siteAddress, id, password);
-  items.push(item);
+  return new Item(name, siteAddress, id, password);
 }
 
 function searchItem(items, searchWord) {
-  let item = findItem(items, searchWord);
+  let item = items.find((item) => {
+    return item.isSubjectToSearch(searchWord);
+  });
   if (item == undefined) {
     console.log('Item not found.');
     return;
@@ -44,12 +48,6 @@ function unlock() {
   return false;
 }
 
-function findItem(items, word) {
-  return items.find((item) => {
-    return item.name == word || item.site == word;
-  });
-}
-
 // ------------
 //   main
 // ------------
@@ -67,7 +65,8 @@ for(;;) {
   if (command == 'q' || command == 'quit') {
     break;
   } else if (command == 'a' || command == 'add') {
-    addItem(items); // TODO:副作用ありなので要修正
+    let item = addItem(items);
+    items.push(item);
     ItemRepository.write(items);
     console.log();
   } else if (command == 's' || command == 'search') {
