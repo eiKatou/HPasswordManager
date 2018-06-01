@@ -2,7 +2,7 @@ const crypto = require("crypto");
 
 class MasterPassword {
   constructor(password) {
-    this.password = password;
+    this._password = password;
   }
   
   getHash() {
@@ -13,6 +13,10 @@ class MasterPassword {
 
   isEqualToHash(expectedHash) {
     return this.getHash() == expectedHash;
+  }
+
+  get password() {
+    return this._password;
   }
 
   debugPrint() {
