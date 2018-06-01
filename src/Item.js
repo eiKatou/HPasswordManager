@@ -1,7 +1,9 @@
 class Item {
-  constructor(name, site) {
+  constructor(name, site, id, password) {
     this.name = name;
     this.site = site;
+    this.id = id;
+    this.password = password;
   }
   
   print() {
