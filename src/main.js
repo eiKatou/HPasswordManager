@@ -1,9 +1,9 @@
 const readlineSync = require('readline-sync');
 const fs = require('fs');
 const Item = require('./domain/Item');
-const ItemRepository = require('./ItemRepository');
-const Config = require('./Config');
-const ConfigRepository = require('./ConfigRepository');
+const ItemRepository = require('./repository/ItemRepository');
+const Config = require('./repository/Config');
+const ConfigRepository = require('./repository/ConfigRepository');
 const MasterPassword = require('./domain/MasterPassword');
 
 // ------------
