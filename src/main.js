@@ -2,6 +2,9 @@ const readlineSync = require('readline-sync');
 const fs = require('fs');
 const Item = require('./domain/Item');
 const ItemRepository = require('./ItemRepository');
+const Config = require('./Config');
+const ConfigRepository = require('./ConfigRepository');
+const MasterPassword = require('./domain/MasterPassword');
 
 // ------------
 //   function
@@ -19,7 +22,6 @@ function searchItem(items, searchWord) {
     return item.isSubjectToSearch(searchWord);
   });
   if (item == undefined) {
-    console.log('Item not found.');
     return;
   }
   return item;
@@ -40,9 +42,8 @@ function itemCommand(item) {
   }
 }
 
-function unlock() {
-  let masterPassword = readlineSync.question('password: ');
-  if (masterPassword == 'ppp') {
+function validateMasterPassword(config, masterPassword) {
+  if (config.masterPasswordHash == masterPassword.getHash()) {
     return true;
   }
   return false;
@@ -52,8 +53,24 @@ function unlock() {
 //   main
 // ------------
 ItemRepository.init();
-let isUnlock = unlock();
-if (!isUnlock) {
+ConfigRepository.init();
+
+// 設定ファイルの読み込み
+let config = ConfigRepository.load();
+if (config == null) {
+  // マスターパスワードの初期設定
+  let inputNewMasterPassword = readlineSync.question(' new master password: ');
+  let newMasterPassword = new MasterPassword(inputNewMasterPassword);
+  let newConfig = new Config(newMasterPassword.getHash());
+  ConfigRepository.write(newConfig);
+  console.log('Success. Save your master password. Restart this application.');
+  return;
+}
+
+// マスターパスワードの入力と生成
+let inputMasterPassword = readlineSync.question(' master password: ');
+let masterPassword = new MasterPassword(inputMasterPassword);
+if (!validateMasterPassword(config, masterPassword)) {
   console.log('Invalid password.');
   return;
 }
@@ -73,7 +90,8 @@ for(;;) {
     let searchWord = readlineSync.question(' search: ');
     let item = searchItem(items, searchWord);
     if (item == undefined) {
-      break;
+      console.log(' Item not found.');
+      continue;
     }
     console.log();
     itemCommand(item);
