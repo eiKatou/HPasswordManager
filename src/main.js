@@ -9,12 +9,12 @@ const MasterPassword = require('./domain/MasterPassword');
 // ------------
 //   function
 // ------------
-function addItem() {
+function addItem(masterPassword) {
   let name = readlineSync.question(' Item name:');
   let siteAddress = readlineSync.question(' Site address:');
   let id = readlineSync.question(' Id:');
   let password = readlineSync.question(' Password:');
-  return new Item(name, siteAddress, id, password);
+  return Item.create(name, siteAddress, id, password, masterPassword);
 }
 
 function searchItem(items, searchWord) {
@@ -37,7 +37,7 @@ function itemCommand(item) {
     } else if (command == 'i' || command == 'id') {
       console.log(item.id);
     } else if (command == 'p' || command == 'password') {
-      console.log(item.password);
+      console.log(item.getPassword());
     }
   }
 }
@@ -55,7 +55,7 @@ if (config == null) {
   let inputNewMasterPassword = readlineSync.question(' new master password: ');
   let newMasterPassword = new MasterPassword(inputNewMasterPassword);
   let newConfig = new Config(newMasterPassword.getHash());
-  ConfigRepository.write(newConfig);
+  ConfigRepository.save(newConfig);
   console.log('Success. Save your master password. Restart this application.');
   return;
 }
@@ -69,15 +69,15 @@ if (!masterPassword.validate(config.masterPasswordHash)) {
 }
 console.log();
 
-let items = ItemRepository.load(masterPassword.password);
+let items = ItemRepository.load();
 for(;;) {
   let command = readlineSync.question('command: ');
   if (command == 'q' || command == 'quit') {
     break;
   } else if (command == 'a' || command == 'add') {
-    let item = addItem(items);
+    let item = addItem(masterPassword.password);
     items.push(item);
-    ItemRepository.write(items, masterPassword.password);
+    ItemRepository.save(items);
     console.log();
   } else if (command == 's' || command == 'search') {
     let searchWord = readlineSync.question(' search: ');

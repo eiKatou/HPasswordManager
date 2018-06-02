@@ -28,7 +28,7 @@ class ConfigRepository {
     return new Config(configData.masterPasswordHash);
   }
 
-  static write(config) {
+  static save(config) {
     fs.writeFileSync(dataFilePath, JSON.stringify(config, null, 2));
   }
 }

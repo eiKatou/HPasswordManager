@@ -1,9 +1,15 @@
+const EncryptedUtil = require('../util/EncryptUtil');
+
 class Item {
-  constructor(name, site, id, password) {
-    this._name = name;
-    this._site = site;
-    this._id = id;
-    this._password = password;
+  constructor(name, site, id, encryptedPassword) {
+    this.name = name;
+    this.site = site;
+    this.id = id;
+    this.encryptedPassword = encryptedPassword;
+  }
+
+  static create(name, site, id, password, masterPassword) {
+    return new Item(name, site, id, EncryptedUtil.encrypt(password, masterPassword));
   }
   
   isSubjectToSearch(searchWord) {
@@ -11,17 +17,8 @@ class Item {
        || this.site.toLowerCase().includes(searchWord.toLowerCase());
   }
 
-  get name() {
-    return this._name;
-  }
-  get site() {
-    return this._site;
-  }
-  get id() {
-    return this._id;
-  }
-  get password() {
-    return this._password;
+  getPassword(masterPassword) {
+    return EncryptedUtil.decrypt(this.encryptedPassword, masterPassword);
   }
 
   print() {

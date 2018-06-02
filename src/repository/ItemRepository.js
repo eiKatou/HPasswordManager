@@ -1,7 +1,5 @@
 const fs = require('fs');
 const Item = require('../domain/Item');
-const EncryptedItem = require('./EncryptedItem');
-const EncryptedUtil = require('../util/EncryptUtil');
 const homeDir = process.env[process.platform == "win32" ? "USERPROFILE" : "HOME"];
 const dataFilePath = homeDir + '/.hpassword_data';
 
@@ -20,20 +18,15 @@ class ItemRepository {
     }
   }
 
-  static load(masterPassword) {
+  static load() {
     let data = fs.readFileSync(dataFilePath);
     return JSON.parse(data).map(function(element, index, array) {
-      let password = EncryptedUtil.decrypt(element.encryptedPassword, masterPassword);
-      return new Item(element.name, element.site, element.id, password);
+      return new Item(element.name, element.site, element.id, element.encryptedPassword);
     });
   }
 
-  static write(items, masterPassword) {
-    let encryptedItems = items.map(function(element, index, array) {
-      let encryptedPassword = EncryptedUtil.encrypt(element.password, masterPassword);
-      return new EncryptedItem(element.name, element.site, element.id, encryptedPassword);
-    });
-    fs.writeFileSync(dataFilePath, JSON.stringify(encryptedItems, null, 2));
+  static save(items) {
+    fs.writeFileSync(dataFilePath, JSON.stringify(items, null, 2));
   }
 }
 
