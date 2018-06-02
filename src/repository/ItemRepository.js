@@ -21,7 +21,7 @@ class ItemRepository {
   static load() {
     let data = fs.readFileSync(dataFilePath);
     return JSON.parse(data).map(function(element, index, array) {
-      return new Item(element.name, element.site, element.id, element.encryptedPassword);
+      return new Item(element.name, element.site, element.id, element.encryptedPassword, element.salt);
     });
   }
 

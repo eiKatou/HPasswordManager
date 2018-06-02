@@ -1,15 +1,19 @@
 const EncryptedUtil = require('../util/EncryptUtil');
 
 class Item {
-  constructor(name, site, id, encryptedPassword) {
+  constructor(name, site, id, encryptedPassword, salt) {
     this.name = name;
     this.site = site;
     this.id = id;
     this.encryptedPassword = encryptedPassword;
+    this.salt = salt;
   }
 
   static create(name, site, id, password, masterPassword) {
-    return new Item(name, site, id, EncryptedUtil.encrypt(password, masterPassword));
+    const salt = EncryptedUtil.generateSalt();
+    return new Item(name, site, id, 
+      EncryptedUtil.encrypt(password, masterPassword, salt), 
+      salt);
   }
   
   isSubjectToSearch(searchWord) {
@@ -18,7 +22,7 @@ class Item {
   }
 
   getPassword(masterPassword) {
-    return EncryptedUtil.decrypt(this.encryptedPassword, masterPassword);
+    return EncryptedUtil.decrypt(this.encryptedPassword, masterPassword, this.salt);
   }
 
   print() {

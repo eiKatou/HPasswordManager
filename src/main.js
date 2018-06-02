@@ -27,7 +27,7 @@ function searchItem(items, searchWord) {
   return item;
 }
 
-function itemCommand(item) {
+function itemCommand(item, masterPassword) {
   for(;;) {
     let command = readlineSync.question(item.name + ' command: ');
     if (command == 'q' || command == 'quit') {
@@ -37,7 +37,7 @@ function itemCommand(item) {
     } else if (command == 'i' || command == 'id') {
       console.log(item.id);
     } else if (command == 'p' || command == 'password') {
-      console.log(item.getPassword());
+      console.log(item.getPassword(masterPassword));
     }
   }
 }
@@ -87,7 +87,7 @@ for(;;) {
       continue;
     }
     console.log();
-    itemCommand(item);
+    itemCommand(item, masterPassword.password);
     console.log();    
   }
 }
