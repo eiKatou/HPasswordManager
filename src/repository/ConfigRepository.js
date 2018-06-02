@@ -11,7 +11,7 @@ class ConfigRepository {
       // 手動で空ファイルにされる場合を考慮
       let data = fs.readFileSync(dataFilePath);
       if (data == '') {
-        fs.writeFileSync(dataFilePath, JSON.stringify([]));
+        fs.writeFileSync(dataFilePath, JSON.stringify({}));
       }
     } catch (err) {
       fs.writeFileSync(dataFilePath, JSON.stringify({}));
@@ -21,11 +21,10 @@ class ConfigRepository {
   static load() {
     let data = fs.readFileSync(dataFilePath);
     let configData = JSON.parse(data);
-    // TODO:これはConfigに任せても良いのかも。masterPasswordHashで保存されることを知っているのはおかしい。
     if (configData.masterPasswordHash == undefined) {
       return null;
     }
-    return new Config(configData.masterPasswordHash);
+    return new Config(configData.masterPasswordHash, configData.masterPasswordSalt);
   }
 
   static save(config) {

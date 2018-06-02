@@ -53,8 +53,8 @@ let config = ConfigRepository.load();
 if (config == null) {
   // マスターパスワードの初期設定
   let inputNewMasterPassword = readlineSync.question(' new master password: ');
-  let newMasterPassword = new MasterPassword(inputNewMasterPassword);
-  let newConfig = new Config(newMasterPassword.getHash());
+  let newMasterPassword = MasterPassword.create(inputNewMasterPassword);
+  let newConfig = new Config(newMasterPassword.getHash(), newMasterPassword.salt);
   ConfigRepository.save(newConfig);
   console.log('Success. Save your master password. Restart this application.');
   return;
@@ -62,7 +62,7 @@ if (config == null) {
 
 // マスターパスワードの入力と生成
 let inputMasterPassword = readlineSync.question(' master password: ');
-let masterPassword = new MasterPassword(inputMasterPassword);
+let masterPassword = new MasterPassword(inputMasterPassword, config.masterPasswordSalt);
 if (!masterPassword.validate(config.masterPasswordHash)) {
   console.log('Invalid password.');
   return;

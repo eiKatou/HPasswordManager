@@ -1,6 +1,7 @@
 class Config {
-  constructor(masterPasswordHash) {
+  constructor(masterPasswordHash, salt) {
     this.masterPasswordHash = masterPasswordHash;
+    this.masterPasswordSalt = salt;
   }
 
   print() {

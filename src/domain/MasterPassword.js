@@ -1,14 +1,20 @@
 const crypto = require("crypto");
+const EncryptedUtil = require('../util/EncryptUtil');
 
 class MasterPassword {
-  constructor(password) {
+  constructor(password, salt) {
     this._password = password;
+    this._salt = salt;
   }
   
+  static create(password) {
+    const salt = EncryptedUtil.generateSalt();
+    return new MasterPassword(password, salt);
+  }
+
   getHash() {
-    var sha512 = crypto.createHash('sha512');
-    sha512.update(this.password);
-    return sha512.digest('base64');
+    return crypto.pbkdf2Sync(this.password, this.salt, 50000, 512, 'sha512')
+      .toString('base64');
   }
 
   validate(expectedHash) {
@@ -18,7 +24,9 @@ class MasterPassword {
   get password() {
     return this._password;
   }
-
+  get salt() {
+    return this._salt;
+  }
   debugPrint() {
     console.log('master password:' + this.password);
   }
