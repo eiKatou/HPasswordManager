@@ -5,6 +5,7 @@ const ItemRepository = require('./repository/ItemRepository');
 const Config = require('./repository/Config');
 const ConfigRepository = require('./repository/ConfigRepository');
 const MasterPassword = require('./domain/MasterPassword');
+const ClipboardUtil = require('./util/clipboardutil');
 
 // ------------
 //   function
@@ -39,7 +40,8 @@ function itemCommand(item, masterPassword) {
     } else if (command == 'i' || command == 'id') {
       console.log(item.id);
     } else if (command == 'p' || command == 'password') {
-      console.log(item.getPassword(masterPassword));
+      ClipboardUtil.copy(item.getPassword(masterPassword));
+      console.log('Copied to clipboard.');
     }
   }
 }
