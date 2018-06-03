@@ -13,7 +13,9 @@ function addItem(masterPassword) {
   let name = readlineSync.question(' Item name:');
   let siteAddress = readlineSync.question(' Site address:');
   let id = readlineSync.question(' Id:');
-  let password = readlineSync.question(' Password:');
+  let password = readlineSync.question(' Password:', {
+    hideEchoBack: true
+  });
   return Item.create(name, siteAddress, id, password, masterPassword);
 }
 
@@ -52,7 +54,9 @@ ConfigRepository.init();
 let config = ConfigRepository.load();
 if (config == null) {
   // マスターパスワードの初期設定
-  let inputNewMasterPassword = readlineSync.question(' new master password: ');
+  let inputNewMasterPassword = readlineSync.question(' new master password: ', {
+    hideEchoBack: true
+  });
   let newMasterPassword = MasterPassword.create(inputNewMasterPassword);
   let newConfig = new Config(newMasterPassword.getHash(), newMasterPassword.salt);
   ConfigRepository.save(newConfig);
@@ -61,7 +65,9 @@ if (config == null) {
 }
 
 // マスターパスワードの入力と生成
-let inputMasterPassword = readlineSync.question(' master password: ');
+let inputMasterPassword = readlineSync.question(' master password: ', {
+  hideEchoBack: true
+});
 let masterPassword = new MasterPassword(inputMasterPassword, config.masterPasswordSalt);
 if (!masterPassword.validate(config.masterPasswordHash)) {
   console.log('Invalid password.');
