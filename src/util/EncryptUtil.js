@@ -7,7 +7,7 @@ const crypto = require("crypto"),
 class EncryptedUtil {
   static encrypt(clearText, password, salt) {
     var cipher = crypto.createCipher(algorithm, password);
-    var crypted = cipher.update(clearText + salt, beforeEncoding, afterEncoding);
+    var crypted = cipher.update(salt + clearText, beforeEncoding, afterEncoding);
     crypted += cipher.final(afterEncoding);
     return crypted;
   }
@@ -16,7 +16,7 @@ class EncryptedUtil {
     var decipher = crypto.createDecipher(algorithm, password);
     var dec = decipher.update(encryptedText, afterEncoding, beforeEncoding);
     dec += decipher.final(beforeEncoding);
-    return dec.substring(0, dec.length - salt.length);
+    return dec.substring(salt.length, dec.length);
   }
 
   static generateSalt() {
