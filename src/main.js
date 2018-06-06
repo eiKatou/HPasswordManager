@@ -83,7 +83,7 @@ for(;;) {
   if (command == 'q' || command == 'quit') {
     break;
   } else if (command == 'a' || command == 'add') {
-    let item = addItem(masterPassword.password);
+    let item = addItem(masterPassword);
     items.push(item);
     ItemRepository.save(items);
     console.log();
@@ -95,7 +95,7 @@ for(;;) {
       continue;
     }
     console.log();
-    itemCommand(item, masterPassword.password);
+    itemCommand(item, masterPassword);
     console.log();    
   }
 }

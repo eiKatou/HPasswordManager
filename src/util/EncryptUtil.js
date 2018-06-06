@@ -2,21 +2,30 @@ const crypto = require("crypto"),
       algorithm = 'aes-256-ctr',
       beforeEncoding = 'utf8',
       afterEncoding = 'base64',
-      SALT_LENGTH = 128;
+      SALT_LENGTH = 128,
+      IV_LENGTH = 16;
 
 class EncryptedUtil {
-  static encrypt(clearText, password, salt) {
-    var cipher = crypto.createCipher(algorithm, password);
-    var crypted = cipher.update(salt + clearText, beforeEncoding, afterEncoding);
+  static encrypt(clearText, key, iv) { // keyは32文字必要。ivの倍必要なようだ。keyにはHash化したパスワードでも良いのかな
+    const cipher = crypto.createCipheriv(algorithm, key, iv);
+    cipher.setAutoPadding(true);
+    let crypted = cipher.update(clearText, beforeEncoding, afterEncoding);
     crypted += cipher.final(afterEncoding);
     return crypted;
   }
 
-  static decrypt(encryptedText, password, salt) {
-    var decipher = crypto.createDecipher(algorithm, password);
-    var dec = decipher.update(encryptedText, afterEncoding, beforeEncoding);
+  static decrypt(encryptedText, key, iv) {
+    const decipher = crypto.createCipheriv(algorithm, key, iv);
+    decipher.setAutoPadding(true);
+    let dec = decipher.update(encryptedText, afterEncoding, beforeEncoding);
     dec += decipher.final(beforeEncoding);
-    return dec.substring(salt.length, dec.length);
+    return dec;
+  }
+
+  static generateIv() {
+    return crypto.randomBytes(IV_LENGTH)
+      .toString('hex')
+      .slice(0, IV_LENGTH);
   }
 
   static generateSalt() {

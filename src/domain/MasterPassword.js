@@ -17,6 +17,12 @@ class MasterPassword {
       .toString('base64');
   }
 
+  getHash32Byte() {
+    return crypto.pbkdf2Sync(this.password, this.salt, 10000, 32, 'sha512')
+      .toString('base64')
+      .slice(0, 32);
+  }
+
   validate(expectedHash) {
     return this.getHash() == expectedHash;
   }
