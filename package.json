@@ -4,9 +4,12 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/main.js"
   },
-  "author": "",
+  "bin": {
+    "hpm": "src/main.js"
+  },
+  "author": "ei Katou",
   "license": "ISC",
   "dependencies": {
     "readline-sync": "^1.4.9"

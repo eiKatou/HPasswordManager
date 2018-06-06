@@ -1,6 +1,11 @@
 # HPasswordManager
 パスワード管理ソフト
 
+# インストール
+```bash
+npm link
+```
+
 # 開発時のメモ
 ```bash
 ln -s ~/.hpassword.config hpassword.config
