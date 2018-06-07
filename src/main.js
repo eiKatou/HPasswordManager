@@ -1,26 +1,23 @@
 #!/usr/bin/env node
 
+// lib
 const readlineSync = require('readline-sync');
 const fs = require('fs');
+// domain
 const Item = require('./domain/Item');
+const MasterPassword = require('./domain/MasterPassword');
+// repository
 const ItemRepository = require('./repository/ItemRepository');
 const Config = require('./repository/Config');
 const ConfigRepository = require('./repository/ConfigRepository');
-const MasterPassword = require('./domain/MasterPassword');
+// view
+const CommandView = require('./view/commandview');
+// util
 const ClipboardUtil = require('./util/clipboardutil');
 
 // ------------
 //   function
 // ------------
-function addItem(masterPassword) {
-  let name = readlineSync.question(' Item name:');
-  let siteAddress = readlineSync.question(' Site address:');
-  let id = readlineSync.question(' Id:');
-  let password = readlineSync.question(' Password:', {
-    hideEchoBack: true
-  });
-  return Item.create(name, siteAddress, id, password, masterPassword);
-}
 
 /**
  * アイテムを検索します
@@ -71,6 +68,7 @@ if (config == null) {
 }
 
 // マスターパスワードの入力と生成
+// TODO:この中身をViewに移す
 let inputMasterPassword = readlineSync.question(' master password: ', {
   hideEchoBack: true
 });
@@ -82,31 +80,30 @@ if (!masterPassword.validate(config.masterPasswordHash)) {
 console.log();
 
 let items = ItemRepository.load();
-for(;;) {
-  let command = readlineSync.question('command: ');
-  if (command == 'q' || command == 'quit') {
-    break;
-  } else if (command == 'a' || command == 'add') {
-    let item = addItem(masterPassword);
-    items.push(item);
-    ItemRepository.save(items);
-    console.log();
-  } else if (command == 's' || command == 'search') {
-    let searchWord = readlineSync.question(' search: ');
-    let foundItems = searchItem(items, searchWord);
-    if (foundItems.length == 0) {
-      console.log(' Item not found.');
-      continue;
-    }
-    if (foundItems.length > 1) {
-      console.log(foundItems.length + ' items.');
-      foundItems.forEach((item) => {
-        item.print();
-      });
-      continue;
-    }
-    console.log();
-    itemCommand(foundItems[0], masterPassword);
-    console.log();    
+const addFunction = (name, siteAddress, id, password) => {
+  const item = Item.create(name, siteAddress, id, password, masterPassword);
+  items.push(item);
+  ItemRepository.save(items);
+  console.log();　// TODO:consoleの整形はViewで
+};
+const searchFunction = (searchWord) => {
+  // TODO:この中身をViewに移すべきか
+  let foundItems = searchItem(items, searchWord);
+  if (foundItems.length == 0) {
+    console.log(' Item not found.');
+    return;
   }
-}
+  if (foundItems.length > 1) {
+    console.log(foundItems.length + ' items.');
+    foundItems.forEach((item) => {
+      item.print();
+    });
+    return;
+  }
+  console.log();
+  itemCommand(foundItems[0], masterPassword);
+  console.log();  
+};
+
+CommandView.readCommand(addFunction, searchFunction);
+
