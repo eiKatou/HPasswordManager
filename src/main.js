@@ -22,14 +22,16 @@ function addItem(masterPassword) {
   return Item.create(name, siteAddress, id, password, masterPassword);
 }
 
+/**
+ * アイテムを検索します
+ * @param {Item[]} items 
+ * @param {String} searchWord 
+ * @returns {Item[]}
+ */
 function searchItem(items, searchWord) {
-  let item = items.find((item) => {
+  return items.filter((item) => {
     return item.isSubjectToSearch(searchWord);
   });
-  if (item == undefined) {
-    return;
-  }
-  return item;
 }
 
 function itemCommand(item, masterPassword) {
@@ -91,13 +93,20 @@ for(;;) {
     console.log();
   } else if (command == 's' || command == 'search') {
     let searchWord = readlineSync.question(' search: ');
-    let item = searchItem(items, searchWord);
-    if (item == undefined) {
+    let foundItems = searchItem(items, searchWord);
+    if (foundItems.length == 0) {
       console.log(' Item not found.');
       continue;
     }
+    if (foundItems.length > 1) {
+      console.log(foundItems.length + ' items.');
+      foundItems.forEach((item) => {
+        item.print();
+      });
+      continue;
+    }
     console.log();
-    itemCommand(item, masterPassword);
+    itemCommand(foundItems[0], masterPassword);
     console.log();    
   }
 }
