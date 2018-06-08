@@ -62,7 +62,7 @@ function createItemView() {
 }
 
 /**
- * ItemViewを生成します
+ * CommandViewを生成します
  * @param {ItemView} itemView 
  */
 function createCommandView(itemView) {
