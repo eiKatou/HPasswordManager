@@ -11,6 +11,7 @@ const ItemRepository = require('./repository/ItemRepository');
 const Config = require('./repository/Config');
 const ConfigRepository = require('./repository/ConfigRepository');
 // view
+const MasterPasswordView = require('./view/masterpasswordview');
 const CommandView = require('./view/commandview');
 const ItemView = require('./view/itemview');
 // util
@@ -32,6 +33,18 @@ function searchItem(items, searchWord) {
   });
 }
 
+// TODO:Actionを別クラスにするべきか？やりすぎると保守性が下がる
+
+/**
+ * 初期設定時のマスターパスワードを保存します
+ * @param {String} inputMasterPassword 
+ */
+function saveMasterPasswordAction(inputMasterPassword) {
+  let newMasterPassword = MasterPassword.create(inputMasterPassword);
+  let config = new Config(newMasterPassword.getHash(), newMasterPassword.salt);
+  ConfigRepository.save(config);
+};
+
 // ------------
 //   main
 // ------------
@@ -42,13 +55,7 @@ ConfigRepository.init();
 let config = ConfigRepository.load();
 if (config == null) {
   // マスターパスワードの初期設定
-  let inputNewMasterPassword = readlineSync.question(' new master password: ', {
-    hideEchoBack: true
-  });
-  let newMasterPassword = MasterPassword.create(inputNewMasterPassword);
-  let newConfig = new Config(newMasterPassword.getHash(), newMasterPassword.salt);
-  ConfigRepository.save(newConfig);
-  console.log('Success. Save your master password. Restart this application.');
+  MasterPasswordView.settingInitPassword(saveMasterPasswordAction);
   return;
 }
 
