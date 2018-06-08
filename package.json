@@ -10,7 +10,7 @@
     "hpm": "src/main.js"
   },
   "author": "ei Katou",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "readline-sync": "^1.4.9"
   }
