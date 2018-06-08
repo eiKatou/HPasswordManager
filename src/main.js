@@ -65,15 +65,15 @@ if (!masterPassword.validate(config.masterPasswordHash)) {
 
 let items = ItemRepository.load();
 
-const passwordFunction = (item) => {
+const passwordAction = (item) => {
   ClipboardUtil.copy(item.getPassword(masterPassword));
 };
-const addFunction = (name, siteAddress, id, password) => {
+const addAction = (name, siteAddress, id, password) => {
   const item = Item.create(name, siteAddress, id, password, masterPassword);
   items.push(item);
   ItemRepository.save(items);
 };
-const searchFunction = (searchWord) => {
+const searchAction = (searchWord) => {
   let foundItems = searchItem(items, searchWord);
   if (foundItems.length == 0) {
     CommandView.showItemNotFound();
@@ -83,8 +83,8 @@ const searchFunction = (searchWord) => {
     CommandView.showManyItemsFound(foundItems);
     return;
   }
-  ItemView.readCommand(foundItems[0], passwordFunction);
+  ItemView.readCommand(foundItems[0], passwordAction);
 };
 
-CommandView.readCommand(addFunction, searchFunction);
+CommandView.readCommand(addAction, searchAction);
 

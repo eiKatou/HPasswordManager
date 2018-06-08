@@ -4,9 +4,9 @@ class ItemView {
   /**
    * ユーザからのコマンド入力を受け付けます
    * @param {Item} item
-   * @param {function(String)} passwordCallback 
+   * @param {function(String)} passwordAction 
    */
-  static readCommand(item, passwordCallback) {
+  static readCommand(item, passwordAction) {
     for(;;) {
       let command = readlineSync.question(item.name + ' command: ');
       if (command == 'q' || command == 'quit') {
@@ -16,7 +16,7 @@ class ItemView {
       } else if (command == 'i' || command == 'id') {
         console.log(item.id);
       } else if (command == 'p' || command == 'password') {
-        passwordCallback(item);
+        passwordAction(item);
         console.log('Copied to clipboard.');
       }
     }

@@ -3,10 +3,10 @@ const readlineSync = require('readline-sync');
 class CommandView {
   /**
    * ユーザからのコマンド入力を受け付けます
-   * @param {function(String, String, String, String)} addCallback 
-   * @param {function(String)} searchCallback 
+   * @param {function(String, String, String, String)} addAction
+   * @param {function(String)} searchAction
    */
-  static readCommand(addCallback, searchCallback) {
+  static readCommand(addAction, searchAction) {
     for(;;) {
       console.log();
       const command = readlineSync.question('command: ');
@@ -19,10 +19,10 @@ class CommandView {
         const password = readlineSync.question(' Password:', {
           hideEchoBack: true
         });
-        addCallback(name, siteAddress, id, password);
+        addAction(name, siteAddress, id, password);
       } else if (command == 's' || command == 'search') {
         const searchWord = readlineSync.question(' search: ');
-        searchCallback(searchWord);
+        searchAction(searchWord);
       }
     }
   }
