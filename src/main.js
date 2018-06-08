@@ -35,16 +35,6 @@ function searchItem(items, searchWord) {
 
 // TODO:Actionを別クラスにするべきか？やりすぎると保守性が下がる
 
-/**
- * 初期設定時のマスターパスワードを保存します
- * @param {String} inputMasterPassword 
- */
-function saveMasterPasswordAction(inputMasterPassword) {
-  let newMasterPassword = MasterPassword.create(inputMasterPassword);
-  let config = new Config(newMasterPassword.getHash(), newMasterPassword.salt);
-  ConfigRepository.save(config);
-};
-
 // ------------
 //   main
 // ------------
@@ -55,18 +45,19 @@ ConfigRepository.init();
 let config = ConfigRepository.load();
 if (config == null) {
   // マスターパスワードの初期設定
-  MasterPasswordView.settingInitPassword(saveMasterPasswordAction);
+  MasterPasswordView.settingInitPassword((inputMasterPassword) => {
+    let newMasterPassword = MasterPassword.create(inputMasterPassword);
+    let config = new Config(newMasterPassword.getHash(), newMasterPassword.salt);
+    ConfigRepository.save(config);
+  });
   return;
 }
 
 // マスターパスワードの入力と生成
-// TODO:この中身をViewに移す
-let inputMasterPassword = readlineSync.question(' master password: ', {
-  hideEchoBack: true
-});
+let inputMasterPassword = MasterPasswordView.readMasterPassword();
 let masterPassword = new MasterPassword(inputMasterPassword, config.masterPasswordSalt);
 if (!masterPassword.validate(config.masterPasswordHash)) {
-  console.log('Invalid password.');
+  MasterPasswordView.showInvalidMasterPassword();
   return;
 }
 

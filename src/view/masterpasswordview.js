@@ -12,5 +12,23 @@ class MasterPasswordView {
     saveMasterPasswordAction(inputNewMasterPassword);
     console.log('Success. Save your master password. Restart this application.');
   }
+
+  /**
+   * マスターパスワードの入力を読み取り
+   * @returns {String} masterPasswordClearText
+   */
+  static readMasterPassword() {
+    return readlineSync.question(' master password: ', {
+      hideEchoBack: true
+    });
+  }
+
+  /**
+   * マスターパスワードが間違っていた時のエラー表示
+   */
+  static showInvalidMasterPassword() {
+    console.log('Error. Invalid password.');
+  }
+
 }
 module.exports = MasterPasswordView;
