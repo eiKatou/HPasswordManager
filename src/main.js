@@ -18,24 +18,6 @@ const ItemView = require('./view/itemview');
 const ClipboardUtil = require('./util/clipboardutil');
 
 // ------------
-//   function
-// ------------
-
-/**
- * アイテムを検索します
- * @param {Item[]} items 
- * @param {String} searchWord 
- * @returns {Item[]}
- */
-function searchItem(items, searchWord) {
-  return items.filter((item) => {
-    return item.isSubjectToSearch(searchWord);
-  });
-}
-
-// TODO:Actionを別クラスにするべきか？やりすぎると保守性が下がる
-
-// ------------
 //   main
 // ------------
 ItemRepository.init();
@@ -61,18 +43,20 @@ if (!masterPassword.validate(config.masterPasswordHash)) {
   return;
 }
 
+// アイテムの読み込み
 let items = ItemRepository.load();
 
-const passwordAction = (item) => {
-  ClipboardUtil.copy(item.getPassword(masterPassword));
-};
+// ユーザからの指示による操作（アイテムを追加する時の処理）
 const addAction = (name, siteAddress, id, password) => {
   const item = Item.create(name, siteAddress, id, password, masterPassword);
   items.push(item);
   ItemRepository.save(items);
 };
+// ユーザからの指示による操作（アイテムを検索する時の処理）
 const searchAction = (searchWord) => {
-  let foundItems = searchItem(items, searchWord);
+  let foundItems = items.filter((item) => {
+    return item.isSubjectToSearch(searchWord);
+  });
   if (foundItems.length == 0) {
     CommandView.showItemNotFound();
     return;
@@ -81,8 +65,12 @@ const searchAction = (searchWord) => {
     CommandView.showManyItemsFound(foundItems);
     return;
   }
-  ItemView.readCommand(foundItems[0], passwordAction);
+  // アイテムが見つかったので、アイテムに対する操作を受け付ける
+  ItemView.readCommand(foundItems[0], (item) => {
+    ClipboardUtil.copy(item.getPassword(masterPassword));
+  });
 };
 
+// ユーザからの指示を受け付ける
 CommandView.readCommand(addAction, searchAction);
 
