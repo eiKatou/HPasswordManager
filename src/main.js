@@ -12,6 +12,7 @@ const Config = require('./repository/Config');
 const ConfigRepository = require('./repository/ConfigRepository');
 // view
 const CommandView = require('./view/commandview');
+const ItemView = require('./view/itemview');
 // util
 const ClipboardUtil = require('./util/clipboardutil');
 
@@ -29,22 +30,6 @@ function searchItem(items, searchWord) {
   return items.filter((item) => {
     return item.isSubjectToSearch(searchWord);
   });
-}
-
-function itemCommand(item, masterPassword) {
-  for(;;) {
-    let command = readlineSync.question(item.name + ' command: ');
-    if (command == 'q' || command == 'quit') {
-      break;
-    } else if (command == 's' || command == 'show') {
-      item.print();
-    } else if (command == 'i' || command == 'id') {
-      console.log(item.id);
-    } else if (command == 'p' || command == 'password') {
-      ClipboardUtil.copy(item.getPassword(masterPassword));
-      console.log('Copied to clipboard.');
-    }
-  }
 }
 
 // ------------
@@ -77,32 +62,28 @@ if (!masterPassword.validate(config.masterPasswordHash)) {
   console.log('Invalid password.');
   return;
 }
-console.log();
 
 let items = ItemRepository.load();
+
+const passwordFunction = (item) => {
+  ClipboardUtil.copy(item.getPassword(masterPassword));
+};
 const addFunction = (name, siteAddress, id, password) => {
   const item = Item.create(name, siteAddress, id, password, masterPassword);
   items.push(item);
   ItemRepository.save(items);
-  console.log();　// TODO:consoleの整形はViewで
 };
 const searchFunction = (searchWord) => {
-  // TODO:この中身をViewに移すべきか
   let foundItems = searchItem(items, searchWord);
   if (foundItems.length == 0) {
-    console.log(' Item not found.');
+    CommandView.showItemNotFound();
     return;
   }
   if (foundItems.length > 1) {
-    console.log(foundItems.length + ' items.');
-    foundItems.forEach((item) => {
-      item.print();
-    });
+    CommandView.showManyItemsFound(foundItems);
     return;
   }
-  console.log();
-  itemCommand(foundItems[0], masterPassword);
-  console.log();  
+  ItemView.readCommand(foundItems[0], passwordFunction);
 };
 
 CommandView.readCommand(addFunction, searchFunction);
