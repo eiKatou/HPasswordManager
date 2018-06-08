@@ -28,49 +28,60 @@ let config = ConfigRepository.load();
 if (config == null) {
   // マスターパスワードの初期設定
   MasterPasswordView.settingInitPassword((inputMasterPassword) => {
-    let newMasterPassword = MasterPassword.create(inputMasterPassword);
-    let config = new Config(newMasterPassword.getHash(), newMasterPassword.salt);
+    const newMasterPassword = MasterPassword.create(inputMasterPassword);
+    const config = new Config(newMasterPassword.getHash(), newMasterPassword.salt);
     ConfigRepository.save(config);
   });
   return;
 }
 
 // マスターパスワードの入力と生成
-let inputMasterPassword = MasterPasswordView.readMasterPassword();
-let masterPassword = new MasterPassword(inputMasterPassword, config.masterPasswordSalt);
+const inputMasterPassword = MasterPasswordView.readMasterPassword();
+const masterPassword = new MasterPassword(inputMasterPassword, config.masterPasswordSalt);
 if (!masterPassword.validate(config.masterPasswordHash)) {
   MasterPasswordView.showInvalidMasterPassword();
   return;
 }
 
-// アイテムの読み込み
-let items = ItemRepository.load();
-
-// ユーザからの指示による操作（アイテムを追加する時の処理）
-const addAction = (name, siteAddress, id, password) => {
-  const item = Item.create(name, siteAddress, id, password, masterPassword);
-  items.push(item);
-  ItemRepository.save(items);
-};
-// ユーザからの指示による操作（アイテムを検索する時の処理）
-const searchAction = (searchWord) => {
-  let foundItems = items.filter((item) => {
-    return item.isSubjectToSearch(searchWord);
-  });
-  if (foundItems.length == 0) {
-    CommandView.showItemNotFound();
-    return;
-  }
-  if (foundItems.length > 1) {
-    CommandView.showManyItemsFound(foundItems);
-    return;
-  }
-  // アイテムが見つかったので、アイテムに対する操作を受け付ける
-  ItemView.readCommand(foundItems[0], (item) => {
-    ClipboardUtil.copy(item.getPassword(masterPassword));
-  });
-};
+// Viewの生成
+const itemView = createItemView();
+const commandView = createCommandView(itemView);
 
 // ユーザからの指示を受け付ける
-CommandView.readCommand(addAction, searchAction);
+commandView.readCommand();
 
+
+// ------------
+//   function
+// ------------
+/**
+ * ItemViewを生成します
+ */
+function createItemView() {
+  const passwordAction = (item) => {
+    ClipboardUtil.copy(item.getPassword(masterPassword));
+  };
+  return new ItemView(passwordAction);
+}
+
+/**
+ * ItemViewを生成します
+ * @param {ItemView} itemView 
+ */
+function createCommandView(itemView) {
+  // ユーザからの指示による操作（アイテムを追加する時の処理）
+  const addAction = (name, siteAddress, id, password) => {
+    const item = Item.create(name, siteAddress, id, password, masterPassword);
+    const items = ItemRepository.load();
+    items.push(item);
+    ItemRepository.save(items);
+  };
+  // ユーザからの指示による操作（アイテムを検索する時の処理）
+  const searchAction = (searchWord) => {
+    const items = ItemRepository.load();
+    return items.filter((item) => {
+      return item.isSubjectToSearch(searchWord);
+    });
+  };
+  return new CommandView(addAction, searchAction, itemView);
+}
