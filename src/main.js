@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-// lib
-const readlineSync = require('readline-sync');
-const fs = require('fs');
 // domain
 const Item = require('./domain/Item');
 const MasterPassword = require('./domain/MasterPassword');
