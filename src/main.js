@@ -4,6 +4,7 @@
 const Item = require('./domain/Item');
 const MasterPassword = require('./domain/MasterPassword');
 // repository
+const sessionStore = require('./repository/sessionstore');
 const ItemRepository = require('./repository/ItemRepository');
 const Config = require('./repository/Config');
 const ConfigRepository = require('./repository/ConfigRepository');
@@ -20,29 +21,27 @@ const ClipboardUtil = require('./util/clipboardutil');
 ItemRepository.init();
 ConfigRepository.init();
 
+// Viewの生成
+const itemView = createItemView();
+const commandView = createCommandView(itemView);
+const masterPasswordView = createMasterPasswordView();
+
 // 設定ファイルの読み込み
 let config = ConfigRepository.load();
 if (config == null) {
   // マスターパスワードの初期設定
-  MasterPasswordView.settingInitPassword((inputMasterPassword) => {
-    const newMasterPassword = MasterPassword.create(inputMasterPassword);
-    const config = new Config(newMasterPassword.getHash(), newMasterPassword.salt);
-    ConfigRepository.save(config);
-  });
+  masterPasswordView.settingInitPassword();
   return;
 }
 
 // マスターパスワードの入力と生成
-const inputMasterPassword = MasterPasswordView.readMasterPassword();
+const inputMasterPassword = masterPasswordView.readMasterPassword();
 const masterPassword = new MasterPassword(inputMasterPassword, config.masterPasswordSalt);
 if (!masterPassword.validate(config.masterPasswordHash)) {
-  MasterPasswordView.showInvalidMasterPassword();
+  masterPasswordView.showInvalidMasterPassword();
   return;
 }
-
-// Viewの生成
-const itemView = createItemView();
-const commandView = createCommandView(itemView);
+sessionStore.add("masterPassword", masterPassword);
 
 // ユーザからの指示を受け付ける
 commandView.readCommand();
@@ -52,11 +51,23 @@ commandView.readCommand();
 //   function
 // ------------
 /**
+ * MasterpasswordViewを生成します
+ */
+function createMasterPasswordView() {
+  const savePasswordAction = (inputMasterPassword) => {
+    const newMasterPassword = MasterPassword.create(inputMasterPassword);
+    const config = new Config(newMasterPassword.getHash(), newMasterPassword.salt);
+    ConfigRepository.save(config);
+  }
+  return new MasterPasswordView(savePasswordAction);
+}
+
+/**
  * ItemViewを生成します
  */
 function createItemView() {
   const passwordAction = (item) => {
-    ClipboardUtil.copy(item.getPassword(masterPassword));
+    ClipboardUtil.copy(item.getPassword(sessionStore.get("masterPassword")));
   };
   return new ItemView(passwordAction);
 }
@@ -68,7 +79,7 @@ function createItemView() {
 function createCommandView(itemView) {
   // ユーザからの指示による操作（アイテムを追加する時の処理）
   const addAction = (name, siteAddress, id, password) => {
-    const item = Item.create(name, siteAddress, id, password, masterPassword);
+    const item = Item.create(name, siteAddress, id, password, sessionStore.get("masterPassword"));
     const items = ItemRepository.load();
     items.push(item);
     ItemRepository.save(items);

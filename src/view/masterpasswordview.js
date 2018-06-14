@@ -2,14 +2,21 @@ const readlineSync = require('readline-sync');
 
 class MasterPasswordView {
   /**
-   * パスワードの初期設定時の表示
-   * @param {function(String)} saveMasterPasswordAction 
+   * コンストラクタ
+   * @param {function(String)} saveMasterPasswordAction
    */
-  static settingInitPassword(saveMasterPasswordAction) {
+  constructor(saveMasterPasswordAction) {
+    this.saveMasterPasswordAction = saveMasterPasswordAction;
+  }
+
+  /**
+   * パスワードの初期設定時の表示
+   */
+  settingInitPassword() {
     let inputNewMasterPassword = readlineSync.question(' new master password: ', {
       hideEchoBack: true
     });
-    saveMasterPasswordAction(inputNewMasterPassword);
+    this.saveMasterPasswordAction(inputNewMasterPassword);
     console.log('Success. Save your master password. Restart this application.');
   }
 
@@ -17,7 +24,7 @@ class MasterPasswordView {
    * マスターパスワードの入力を読み取り
    * @returns {String} masterPasswordClearText
    */
-  static readMasterPassword() {
+  readMasterPassword() {
     return readlineSync.question(' master password: ', {
       hideEchoBack: true
     });
@@ -26,7 +33,7 @@ class MasterPasswordView {
   /**
    * マスターパスワードが間違っていた時のエラー表示
    */
-  static showInvalidMasterPassword() {
+  showInvalidMasterPassword() {
     console.log('Error. Invalid password.');
   }
 
