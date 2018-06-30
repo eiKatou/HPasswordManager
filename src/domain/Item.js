@@ -24,10 +24,6 @@ class Item {
   getPassword(masterPassword) {
     return EncryptedUtil.decrypt(this.encryptedPassword, masterPassword.getHash32Byte(), this.iv);
   }
-
-  print() {
-    console.log('name:' + this.name + ', site:' + this.site);
-  }
 }
 
 module.exports = Item;

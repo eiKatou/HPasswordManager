@@ -1,51 +1,19 @@
 #!/usr/bin/env node
 
-// lib
-const readlineSync = require('readline-sync');
-const fs = require('fs');
 // domain
 const Item = require('./domain/Item');
 const MasterPassword = require('./domain/MasterPassword');
 // repository
+const sessionStore = require('./repository/sessionstore');
 const ItemRepository = require('./repository/ItemRepository');
 const Config = require('./repository/Config');
 const ConfigRepository = require('./repository/ConfigRepository');
 // view
+const MasterPasswordView = require('./view/masterpasswordview');
 const CommandView = require('./view/commandview');
+const ItemView = require('./view/itemview');
 // util
 const ClipboardUtil = require('./util/clipboardutil');
-
-// ------------
-//   function
-// ------------
-
-/**
- * アイテムを検索します
- * @param {Item[]} items 
- * @param {String} searchWord 
- * @returns {Item[]}
- */
-function searchItem(items, searchWord) {
-  return items.filter((item) => {
-    return item.isSubjectToSearch(searchWord);
-  });
-}
-
-function itemCommand(item, masterPassword) {
-  for(;;) {
-    let command = readlineSync.question(item.name + ' command: ');
-    if (command == 'q' || command == 'quit') {
-      break;
-    } else if (command == 's' || command == 'show') {
-      item.print();
-    } else if (command == 'i' || command == 'id') {
-      console.log(item.id);
-    } else if (command == 'p' || command == 'password') {
-      ClipboardUtil.copy(item.getPassword(masterPassword));
-      console.log('Copied to clipboard.');
-    }
-  }
-}
 
 // ------------
 //   main
@@ -53,57 +21,75 @@ function itemCommand(item, masterPassword) {
 ItemRepository.init();
 ConfigRepository.init();
 
+// Viewの生成
+const itemView = createItemView();
+const commandView = createCommandView(itemView);
+const masterPasswordView = createMasterPasswordView();
+
 // 設定ファイルの読み込み
 let config = ConfigRepository.load();
 if (config == null) {
   // マスターパスワードの初期設定
-  let inputNewMasterPassword = readlineSync.question(' new master password: ', {
-    hideEchoBack: true
-  });
-  let newMasterPassword = MasterPassword.create(inputNewMasterPassword);
-  let newConfig = new Config(newMasterPassword.getHash(), newMasterPassword.salt);
-  ConfigRepository.save(newConfig);
-  console.log('Success. Save your master password. Restart this application.');
+  masterPasswordView.settingInitPassword();
   return;
 }
 
 // マスターパスワードの入力と生成
-// TODO:この中身をViewに移す
-let inputMasterPassword = readlineSync.question(' master password: ', {
-  hideEchoBack: true
-});
-let masterPassword = new MasterPassword(inputMasterPassword, config.masterPasswordSalt);
+const inputMasterPassword = masterPasswordView.readMasterPassword();
+const masterPassword = new MasterPassword(inputMasterPassword, config.masterPasswordSalt);
 if (!masterPassword.validate(config.masterPasswordHash)) {
-  console.log('Invalid password.');
+  masterPasswordView.showInvalidMasterPassword();
   return;
 }
-console.log();
+sessionStore.add("masterPassword", masterPassword);
 
-let items = ItemRepository.load();
-const addFunction = (name, siteAddress, id, password) => {
-  const item = Item.create(name, siteAddress, id, password, masterPassword);
-  items.push(item);
-  ItemRepository.save(items);
-  console.log();　// TODO:consoleの整形はViewで
-};
-const searchFunction = (searchWord) => {
-  // TODO:この中身をViewに移すべきか
-  let foundItems = searchItem(items, searchWord);
-  if (foundItems.length == 0) {
-    console.log(' Item not found.');
-    return;
+// ユーザからの指示を受け付ける
+commandView.readCommand();
+
+
+// ------------
+//   function
+// ------------
+/**
+ * MasterpasswordViewを生成します
+ */
+function createMasterPasswordView() {
+  const savePasswordAction = (inputMasterPassword) => {
+    const newMasterPassword = MasterPassword.create(inputMasterPassword);
+    const config = new Config(newMasterPassword.getHash(), newMasterPassword.salt);
+    ConfigRepository.save(config);
   }
-  if (foundItems.length > 1) {
-    console.log(foundItems.length + ' items.');
-    foundItems.forEach((item) => {
-      item.print();
+  return new MasterPasswordView(savePasswordAction);
+}
+
+/**
+ * ItemViewを生成します
+ */
+function createItemView() {
+  const passwordAction = (item) => {
+    ClipboardUtil.copy(item.getPassword(sessionStore.get("masterPassword")));
+  };
+  return new ItemView(passwordAction);
+}
+
+/**
+ * CommandViewを生成します
+ * @param {ItemView} itemView 
+ */
+function createCommandView(itemView) {
+  // ユーザからの指示による操作（アイテムを追加する時の処理）
+  const addAction = (name, siteAddress, id, password) => {
+    const item = Item.create(name, siteAddress, id, password, sessionStore.get("masterPassword"));
+    const items = ItemRepository.load();
+    items.push(item);
+    ItemRepository.save(items);
+  };
+  // ユーザからの指示による操作（アイテムを検索する時の処理）
+  const searchAction = (searchWord) => {
+    const items = ItemRepository.load();
+    return items.filter((item) => {
+      return item.isSubjectToSearch(searchWord);
     });
-    return;
-  }
-  console.log();
-  itemCommand(foundItems[0], masterPassword);
-  console.log();  
-};
-
-CommandView.readCommand(addFunction, searchFunction);
-
+  };
+  return new CommandView(addAction, searchAction, itemView);
+}
